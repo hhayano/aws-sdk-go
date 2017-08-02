@@ -1,6 +1,7 @@
 {
   "version":"2.0",
   "metadata":{
+    "uid":"email-2010-12-01",
     "apiVersion":"2010-12-01",
     "endpointPrefix":"email",
     "protocol":"query",
@@ -8,7 +9,6 @@
     "serviceFullName":"Amazon Simple Email Service",
     "signatureVersion":"v4",
     "signingName":"ses",
-    "uid":"email-2010-12-01",
     "xmlNamespace":"http://ses.amazonaws.com/doc/2010-12-01/"
   },
   "operations":{
@@ -62,7 +62,6 @@
         {"shape":"EventDestinationAlreadyExistsException"},
         {"shape":"InvalidCloudWatchDestinationException"},
         {"shape":"InvalidFirehoseDestinationException"},
-        {"shape":"InvalidSNSDestinationException"},
         {"shape":"LimitExceededException"}
       ]
     },
@@ -621,8 +620,7 @@
         {"shape":"ConfigurationSetDoesNotExistException"},
         {"shape":"EventDestinationDoesNotExistException"},
         {"shape":"InvalidCloudWatchDestinationException"},
-        {"shape":"InvalidFirehoseDestinationException"},
-        {"shape":"InvalidSNSDestinationException"}
+        {"shape":"InvalidFirehoseDestinationException"}
       ]
     },
     "UpdateReceiptRule":{
@@ -1139,8 +1137,7 @@
       "type":"string",
       "enum":[
         "messageTag",
-        "emailHeader",
-        "linkTag"
+        "emailHeader"
       ]
     },
     "DkimAttributes":{
@@ -1172,8 +1169,7 @@
         "Enabled":{"shape":"Enabled"},
         "MatchingEventTypes":{"shape":"EventTypes"},
         "KinesisFirehoseDestination":{"shape":"KinesisFirehoseDestination"},
-        "CloudWatchDestination":{"shape":"CloudWatchDestination"},
-        "SNSDestination":{"shape":"SNSDestination"}
+        "CloudWatchDestination":{"shape":"CloudWatchDestination"}
       }
     },
     "EventDestinationAlreadyExistsException":{
@@ -1214,9 +1210,7 @@
         "reject",
         "bounce",
         "complaint",
-        "delivery",
-        "open",
-        "click"
+        "delivery"
       ]
     },
     "EventTypes":{
@@ -1461,19 +1455,6 @@
       },
       "error":{
         "code":"InvalidS3Configuration",
-        "httpStatusCode":400,
-        "senderFault":true
-      },
-      "exception":true
-    },
-    "InvalidSNSDestinationException":{
-      "type":"structure",
-      "members":{
-        "ConfigurationSetName":{"shape":"ConfigurationSetName"},
-        "EventDestinationName":{"shape":"EventDestinationName"}
-      },
-      "error":{
-        "code":"InvalidSNSDestination",
         "httpStatusCode":400,
         "senderFault":true
       },
@@ -1906,13 +1887,6 @@
         "UTF-8",
         "Base64"
       ]
-    },
-    "SNSDestination":{
-      "type":"structure",
-      "required":["TopicARN"],
-      "members":{
-        "TopicARN":{"shape":"AmazonResourceName"}
-      }
     },
     "SendBounceRequest":{
       "type":"structure",

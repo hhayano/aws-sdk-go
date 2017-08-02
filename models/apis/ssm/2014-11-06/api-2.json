@@ -1099,20 +1099,6 @@
         {"shape":"InternalServerError"}
       ]
     },
-    "SendAutomationSignal":{
-      "name":"SendAutomationSignal",
-      "http":{
-        "method":"POST",
-        "requestUri":"/"
-      },
-      "input":{"shape":"SendAutomationSignalRequest"},
-      "output":{"shape":"SendAutomationSignalResult"},
-      "errors":[
-        {"shape":"AutomationExecutionNotFoundException"},
-        {"shape":"InvalidAutomationSignalException"},
-        {"shape":"InternalServerError"}
-      ]
-    },
     "SendCommand":{
       "name":"SendCommand",
       "http":{
@@ -1625,7 +1611,6 @@
       "enum":[
         "Pending",
         "InProgress",
-        "Waiting",
         "Success",
         "TimedOut",
         "Cancelled",
@@ -3583,13 +3568,6 @@
       },
       "exception":true
     },
-    "InvalidAutomationSignalException":{
-      "type":"structure",
-      "members":{
-        "Message":{"shape":"String"}
-      },
-      "exception":true
-    },
     "InvalidCommandId":{
       "type":"structure",
       "members":{
@@ -5359,23 +5337,6 @@
       "max":256,
       "min":1
     },
-    "SendAutomationSignalRequest":{
-      "type":"structure",
-      "required":[
-        "AutomationExecutionId",
-        "SignalType"
-      ],
-      "members":{
-        "AutomationExecutionId":{"shape":"AutomationExecutionId"},
-        "SignalType":{"shape":"SignalType"},
-        "Payload":{"shape":"AutomationParameterMap"}
-      }
-    },
-    "SendAutomationSignalResult":{
-      "type":"structure",
-      "members":{
-      }
-    },
     "SendCommandRequest":{
       "type":"structure",
       "required":["DocumentName"],
@@ -5407,13 +5368,6 @@
       }
     },
     "ServiceRole":{"type":"string"},
-    "SignalType":{
-      "type":"string",
-      "enum":[
-        "Approve",
-        "Reject"
-      ]
-    },
     "SnapshotDownloadUrl":{"type":"string"},
     "SnapshotId":{
       "type":"string",
