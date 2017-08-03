@@ -327,14 +327,14 @@ func TestBoolCondition(t *testing.T) {
 			input: NewPath("foo").Equal(NewValue(5)).And(NewPath("bar").Equal(NewValue("baz"))),
 			expected: Expression{
 				Names: map[string]*string{
-					"#0": aws.String("bar"),
-					"#1": aws.String("foo"),
+					"#1": aws.String("bar"),
+					"#0": aws.String("foo"),
 				},
 				Values: map[string]*dynamodb.AttributeValue{
-					":1": &dynamodb.AttributeValue{
+					":0": &dynamodb.AttributeValue{
 						N: aws.String("5"),
 					},
-					":0": &dynamodb.AttributeValue{
+					":1": &dynamodb.AttributeValue{
 						S: aws.String("baz"),
 					},
 				},

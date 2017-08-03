@@ -97,9 +97,10 @@ func (s SizeBuilder) Equal(right OperandBuilder) ConditionBuilder {
 //
 //     anotherCondition := expression.Not(andCondition)		// Used in another condition
 //     expression, err := andCondition.BuildExpression()	// Used to make an Expression
-func And(cond ...ConditionBuilder) ConditionBuilder {
+func And(left, right ConditionBuilder, other ...ConditionBuilder) ConditionBuilder {
+	other = append([]ConditionBuilder{left, right}, other...)
 	return ConditionBuilder{
-		conditionList: cond,
+		conditionList: other,
 		Mode:          AndCond,
 	}
 }
@@ -111,9 +112,8 @@ func And(cond ...ConditionBuilder) ConditionBuilder {
 //     // The following produce equivalent conditions:
 //     condition := expression.And(condition1, condition2, condition3)
 //     condition := condition1.And(condition2, condition3)
-func (cond ConditionBuilder) And(right ...ConditionBuilder) ConditionBuilder {
-	right = append(right, cond)
-	return And(right...)
+func (cond ConditionBuilder) And(right ConditionBuilder, other ...ConditionBuilder) ConditionBuilder {
+	return And(cond, right, other...)
 }
 
 // Between will create a ConditionBuilder with three operands as children, the
@@ -225,7 +225,13 @@ func (cond ConditionBuilder) buildCondition() (ExprNode, error) {
 // ConditionBuilders. There will first be checks to make sure that the input
 // ConditionBuilder has the correct format.
 func compareBuildCondition(c ConditionBuilder) (ExprNode, error) {
-	childNodes, err := buildChildNodes(c, 2, 0)
+	if len(c.operandList) != 2 {
+		return ExprNode{}, fmt.Errorf("betweenBuildCondition Error: Expected 2 operands")
+	}
+	if len(c.conditionList) != 0 {
+		return ExprNode{}, fmt.Errorf("betweenBuildCondition Error: Expected 0 conditions")
+	}
+	childNodes, err := c.buildChildNodes()
 	if err != nil {
 		return ExprNode{}, err
 	}
@@ -246,7 +252,13 @@ func compareBuildCondition(c ConditionBuilder) (ExprNode, error) {
 // ConditionBuilders. There will first be checks to make sure that the input
 // ConditionBuilder has the correct format.
 func compoundBuildCondition(c ConditionBuilder) (ExprNode, error) {
-	childNodes, err := buildChildNodes(c, 0, 2)
+	if len(c.operandList) != 0 {
+		return ExprNode{}, fmt.Errorf("betweenBuildCondition Error: Expected 0 operands")
+	}
+	if len(c.conditionList) < 2 {
+		return ExprNode{}, fmt.Errorf("betweenBuildCondition Error: Expected at least 2 conditions")
+	}
+	childNodes, err := c.buildChildNodes()
 	if err != nil {
 		return ExprNode{}, err
 	}
@@ -273,7 +285,14 @@ func compoundBuildCondition(c ConditionBuilder) (ExprNode, error) {
 // ConditionBuilders. There will first be checks to make sure that the input
 // ConditionBuilder has the correct format.
 func betweenBuildCondition(c ConditionBuilder) (ExprNode, error) {
-	childNodes, err := buildChildNodes(c, 3, 0)
+	if len(c.operandList) != 3 {
+		return ExprNode{}, fmt.Errorf("betweenBuildCondition Error: Expected 3 operands")
+	}
+	if len(c.conditionList) != 0 {
+		return ExprNode{}, fmt.Errorf("betweenBuildCondition Error: Expected 0 conditions")
+	}
+
+	childNodes, err := c.buildChildNodes()
 	if err != nil {
 		return ExprNode{}, err
 	}
@@ -287,44 +306,22 @@ func betweenBuildCondition(c ConditionBuilder) (ExprNode, error) {
 	return ret, nil
 }
 
-// buildChildNodes will check the format of the ConditionBuilder as well as
-// create the list of the child ExprNodes. This avoids duplication of code
-// amongst the various buildConditions.
-func buildChildNodes(c ConditionBuilder, numOB, numCB int) ([]ExprNode, error) {
-	if c.Mode == AndCond {
-		if len(c.conditionList) < numCB {
-			return []ExprNode{}, fmt.Errorf("Invalid ConditionBuilder. Expected at least %d Conditions", numCB)
-		}
-	} else {
-		if len(c.conditionList) != numCB {
-			return []ExprNode{}, fmt.Errorf("Invalid ConditionBuilder. Expected %d Conditions", numCB)
-		}
-	}
-
-	// This check will be needed for In Condition, but not needed right now
-	// if c.Mode == InCond {
-	// 	if len(c.operandList) < numOB {
-	// 		return []ExprNode{}, fmt.Errorf("Invalid ConditionBuilder. Expected at least %d Operands", numOB)
-	// 	}
-	// } else {
-	if len(c.operandList) != numOB {
-		return []ExprNode{}, fmt.Errorf("Invalid ConditionBuilder. Expected %d Operands", numOB)
-	}
-	//}
-
+// buildChildNodes will create the list of the child ExprNodes. This avoids
+// duplication of code amongst the various buildConditions.
+func (cond ConditionBuilder) buildChildNodes() ([]ExprNode, error) {
 	var childNodes []ExprNode
-	if len(c.operandList) == 0 {
-		childNodes = make([]ExprNode, 0, len(c.conditionList))
-		for _, cond := range c.conditionList {
-			en, err := cond.buildCondition()
+	if len(cond.operandList) == 0 {
+		childNodes = make([]ExprNode, 0, len(cond.conditionList))
+		for _, condition := range cond.conditionList {
+			en, err := condition.buildCondition()
 			if err != nil {
 				return []ExprNode{}, err
 			}
 			childNodes = append(childNodes, en)
 		}
-	} else if len(c.conditionList) == 0 {
-		childNodes = make([]ExprNode, 0, len(c.operandList))
-		for _, ope := range c.operandList {
+	} else if len(cond.conditionList) == 0 {
+		childNodes = make([]ExprNode, 0, len(cond.operandList))
+		for _, ope := range cond.operandList {
 			en, err := ope.BuildOperand()
 			if err != nil {
 				return []ExprNode{}, err
