@@ -92,27 +92,27 @@ type OperandBuilder interface {
 	BuildOperand() (ExprNode, error)
 }
 
-// NewPath creates a PathBuilder, which implements the OperandBuilder interface.
-// NewPath will mainly be called in a pattern in order to create
+// Path creates a PathBuilder, which implements the OperandBuilder interface.
+// Path will mainly be called in a pattern in order to create
 // ConditionBuilders.
 //
 // Example:
 //
-//     condition := NewPath("foo").Equal(NewPath("bar"))
-func NewPath(p string) PathBuilder {
+//     condition := Path("foo").Equal(Path("bar"))
+func Path(p string) PathBuilder {
 	return PathBuilder{
 		path: p,
 	}
 }
 
-// NewValue creates a ValueBuilder, which implements the OperandBuilder
-// interface. NewValue will mainly be called in a pattern in order to create
+// Value creates a ValueBuilder, which implements the OperandBuilder
+// interface. Value will mainly be called in a pattern in order to create
 // ConditionBuilders.
 //
 // Example:
 //
-//     condition := NewPath("foo").Equal(NewValue(10))
-func NewValue(v interface{}) ValueBuilder {
+//     condition := Path("foo").Equal(Value(10))
+func Value(v interface{}) ValueBuilder {
 	return ValueBuilder{
 		value: v,
 	}
@@ -123,7 +123,7 @@ func NewValue(v interface{}) ValueBuilder {
 //
 // Example:
 //
-//     condition := NewPath("foo").Size().Equal(NewValue(10))
+//     condition := Path("foo").Size().Equal(Value(10))
 func (p PathBuilder) Size() SizeBuilder {
 	return SizeBuilder{
 		pb: p,
@@ -135,7 +135,7 @@ func (p PathBuilder) Size() SizeBuilder {
 // method to call on, not for users to invoke.
 func (p PathBuilder) BuildOperand() (ExprNode, error) {
 	if p.path == "" {
-		return ExprNode{}, fmt.Errorf("BuildOperand Error: Path is empty")
+		return ExprNode{}, fmt.Errorf("BuildOperand error: path is empty")
 	}
 
 	ret := ExprNode{
@@ -148,7 +148,7 @@ func (p PathBuilder) BuildOperand() (ExprNode, error) {
 	for _, word := range nameSplit {
 		var substr string
 		if word == "" {
-			return ExprNode{}, fmt.Errorf("BuildOperand Error: invalid path")
+			return ExprNode{}, fmt.Errorf("BuildOperand error: path is empty")
 		}
 
 		if word[len(word)-1] == ']' {
@@ -162,7 +162,7 @@ func (p PathBuilder) BuildOperand() (ExprNode, error) {
 		}
 
 		if word == "" {
-			return ExprNode{}, fmt.Errorf("BuildOperand Error: invalid path index")
+			return ExprNode{}, fmt.Errorf("BuildOperand error: invalid path index")
 		}
 
 		// Create a string with special characters that can be substituted later: $p
@@ -213,7 +213,7 @@ type aliasList struct {
 // specified by aliasList
 func (en ExprNode) buildExprNodes(al *aliasList) (Expression, error) {
 	if al == nil {
-		return Expression{}, fmt.Errorf("buildExprNodes Error: aliasList is nil")
+		return Expression{}, fmt.Errorf("buildExprNodes error: aliasList is nil")
 	}
 
 	// Since each ExprNode contains a slice of names, values, and children that
@@ -233,7 +233,7 @@ func (en ExprNode) buildExprNodes(al *aliasList) (Expression, error) {
 		}
 
 		if i == len(expr.Expression)-1 {
-			return Expression{}, fmt.Errorf("buildExprNode Error: Invalid escape $")
+			return Expression{}, fmt.Errorf("buildExprNode error: invalid escape character")
 		}
 
 		var alias string
@@ -242,7 +242,7 @@ func (en ExprNode) buildExprNodes(al *aliasList) (Expression, error) {
 		switch expr.Expression[i+1] {
 		case 'p':
 			if index.name >= len(en.names) {
-				return Expression{}, fmt.Errorf("buildExprNodes Error: ExprNode []names out of range")
+				return Expression{}, fmt.Errorf("buildExprNodes error: ExprNode []names out of range")
 			}
 			str, err := al.aliasPath(en.names[index.name])
 			if err != nil {
@@ -257,7 +257,7 @@ func (en ExprNode) buildExprNodes(al *aliasList) (Expression, error) {
 
 		case 'v':
 			if index.value >= len(en.values) {
-				return Expression{}, fmt.Errorf("buildExprNodes Error: ExprNode []values out of range")
+				return Expression{}, fmt.Errorf("buildExprNodes error: ExprNode []values out of range")
 			}
 			str, err := al.aliasValue(en.values[index.value])
 			if err != nil {
@@ -272,7 +272,7 @@ func (en ExprNode) buildExprNodes(al *aliasList) (Expression, error) {
 
 		case 'c':
 			if index.children >= len(en.children) {
-				return Expression{}, fmt.Errorf("buildExprNodes Error: ExprNode []children out of range")
+				return Expression{}, fmt.Errorf("buildExprNodes error: ExprNode []children out of range")
 			}
 			childExpr, err := en.children[index.children].buildExprNodes(al)
 			if err != nil {
@@ -288,7 +288,7 @@ func (en ExprNode) buildExprNodes(al *aliasList) (Expression, error) {
 			index.children++
 
 		default:
-			return Expression{}, fmt.Errorf("buildExprNode Error: Invalid escape rune %#v", expr.Expression[i+1])
+			return Expression{}, fmt.Errorf("buildExprNode error: invalid escape rune %#v", expr.Expression[i+1])
 		}
 		expr.Expression = expr.Expression[:i] + alias + expr.Expression[i+2:]
 		i += len(alias)
@@ -308,7 +308,7 @@ func (al *aliasList) aliasValue(dav dynamodb.AttributeValue) (string, error) {
 	// }
 
 	if al == nil {
-		return "", fmt.Errorf("aliasValue Error: aliasList is nil")
+		return "", fmt.Errorf("aliasValue error: aliasList is nil")
 	}
 
 	// If deduplicating, uncomment above and there should be an error message here
@@ -323,7 +323,7 @@ func (al *aliasList) aliasValue(dav dynamodb.AttributeValue) (string, error) {
 // duplicate strings getting two different aliases.
 func (al *aliasList) aliasPath(nm string) (string, error) {
 	if al == nil {
-		return "", fmt.Errorf("aliasValue Error: aliasList is nil")
+		return "", fmt.Errorf("aliasValue error: aliasList is nil")
 	}
 
 	for ind, name := range al.namesList {
@@ -341,7 +341,7 @@ func mergeExpressionMaps(lists ...[]Expression) (Expression, error) {
 	for _, list := range lists {
 		for _, expr := range list {
 			if reflect.DeepEqual(expr, (Expression{})) {
-				return Expression{}, fmt.Errorf("mergeExpressionMaps Error: expression is unset")
+				return Expression{}, fmt.Errorf("mergeExpressionMaps error: expression is unset")
 			}
 			for alias, name := range expr.Names {
 				if ret.Names == nil {
