@@ -2,8 +2,12 @@ package expression
 
 import "fmt"
 
+<<<<<<< HEAD
 // ConditionMode will specify the types of the struct ConditionBuilder,
 // representing the different types of Conditions (i.e. And, Or, Between, ...)
+=======
+// ConditionMode will specify the types of the struct ConditionBuilder
+>>>>>>> d753f586ade03ef8fa60c18037e2679ee424ee0b
 type ConditionMode int
 
 const (
@@ -13,6 +17,7 @@ const (
 	EqualCond
 	// AndCond will represent the And Clause ConditionBuilder
 	AndCond
+<<<<<<< HEAD
 	// BetweenCond will represent the Between ConditionBuilder
 	BetweenCond
 )
@@ -24,12 +29,18 @@ const (
 // to create an Expression which can then be used for operation inputs into
 // DynamoDB.
 // More Information at: http://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Expressions.ConditionExpressions.html
+=======
+)
+
+// ConditionBuilder will represent the ConditionExpressions
+>>>>>>> d753f586ade03ef8fa60c18037e2679ee424ee0b
 type ConditionBuilder struct {
 	operandList   []OperandBuilder
 	conditionList []ConditionBuilder
 	Mode          ConditionMode
 }
 
+<<<<<<< HEAD
 // Equal will create a ConditionBuilder with two OperandBuilders as children,
 // representing the two operands that are being compared. The resulting
 // ConditionBuilder can be used to build other Conditions or to create an
@@ -41,6 +52,11 @@ type ConditionBuilder struct {
 //
 // anotherCondition := expression.Not(condition)	// Used in another condition
 // expression, err := condition.BuildExpression()	// Used to make an Expression
+=======
+// Equal
+
+// Equal will create a ConditionBuilder. This will be the function call
+>>>>>>> d753f586ade03ef8fa60c18037e2679ee424ee0b
 func Equal(left, right OperandBuilder) ConditionBuilder {
 	return ConditionBuilder{
 		operandList: []OperandBuilder{left, right},
@@ -49,39 +65,49 @@ func Equal(left, right OperandBuilder) ConditionBuilder {
 }
 
 // Equal will create a ConditionBuilder. This will be the method for PathBuilder
+<<<<<<< HEAD
 //
 // Example:
 //
 // The following produce equivalent conditions:
 // condition := expression.Equal(expression.NewPath("foo"), expression.NewValue(5))
 // condition := expression.NewPath("foo").Equal(expression.NewValue(5))
+=======
+>>>>>>> d753f586ade03ef8fa60c18037e2679ee424ee0b
 func (p PathBuilder) Equal(right OperandBuilder) ConditionBuilder {
 	return Equal(p, right)
 }
 
 // Equal will create a ConditionBuilder. This will be the method for
 // ValueBuilder
+<<<<<<< HEAD
 //
 // Example:
 //
 // The following produce equivalent conditions:
 // condition := expression.Equal(expression.NewValue(10), expression.NewValue(5))
 // condition := expression.NewValue(10).Equal(expression.NewValue(5))
+=======
+>>>>>>> d753f586ade03ef8fa60c18037e2679ee424ee0b
 func (v ValueBuilder) Equal(right OperandBuilder) ConditionBuilder {
 	return Equal(v, right)
 }
 
 // Equal will create a ConditionBuilder. This will be the method for SizeBuilder
+<<<<<<< HEAD
 //
 // Example:
 //
 // The following produce equivalent conditions:
 // condition := expression.Equal(expression.NewPath("foo").Size(), expression.NewValue(5))
 // condition := expression.NewPath("foo").Size().Equal(expression.NewValue(5))
+=======
+>>>>>>> d753f586ade03ef8fa60c18037e2679ee424ee0b
 func (s SizeBuilder) Equal(right OperandBuilder) ConditionBuilder {
 	return Equal(s, right)
 }
 
+<<<<<<< HEAD
 // And will create a ConditionBuilder with more than two other Conditions as
 // children, representing logical statements that will be logically ANDed
 // together. The resulting ConditionBuilder can be used to build other
@@ -193,6 +219,10 @@ func (s SizeBuilder) Between(lower, upper OperandBuilder) ConditionBuilder {
 // 	},
 // 	TableName: aws.String("SomeTable"),
 // }
+=======
+// BuildExpression will take an ConditionBuilder as input and output an
+// Expression
+>>>>>>> d753f586ade03ef8fa60c18037e2679ee424ee0b
 func (cond ConditionBuilder) BuildExpression() (Expression, error) {
 	en, err := cond.buildCondition()
 	if err != nil {
@@ -207,21 +237,30 @@ func (cond ConditionBuilder) BuildExpression() (Expression, error) {
 	return expr, nil
 }
 
+<<<<<<< HEAD
 // buildCondition will build a tree structure of ExprNodes based on the tree
 // structure of the input ConditionBuilder's child Conditions/Operands.
+=======
+// buildCondition will iterate over the tree of ConditionBuilders and
+// OperandBuilders and build a tree of ExprNodes
+>>>>>>> d753f586ade03ef8fa60c18037e2679ee424ee0b
 func (cond ConditionBuilder) buildCondition() (ExprNode, error) {
 	switch cond.Mode {
 	case EqualCond:
 		return compareBuildCondition(cond)
+<<<<<<< HEAD
 	case AndCond:
 		return compoundBuildCondition(cond)
 	case BetweenCond:
 		return betweenBuildCondition(cond)
+=======
+>>>>>>> d753f586ade03ef8fa60c18037e2679ee424ee0b
 	}
 	return ExprNode{}, fmt.Errorf("No matching Mode to %v", cond.Mode)
 }
 
 // compareBuildCondition is the function to make ExprNodes from Compare
+<<<<<<< HEAD
 // ConditionBuilders. There will first be checks to make sure that the input
 // ConditionBuilder has the correct format.
 func compareBuildCondition(c ConditionBuilder) (ExprNode, error) {
@@ -334,4 +373,36 @@ func buildChildNodes(c ConditionBuilder, numOB, numCB int) ([]ExprNode, error) {
 	}
 
 	return childNodes, nil
+=======
+// ConditionBuilders
+func compareBuildCondition(c ConditionBuilder) (ExprNode, error) {
+	if len(c.conditionList) != 0 {
+		return ExprNode{}, fmt.Errorf("Invalid ConditionBuilder. Expected 0 ConditionBuilders")
+	}
+
+	if len(c.operandList) != 2 {
+		return ExprNode{}, fmt.Errorf("Invalid ConditionBuilder. Expected 2 Operands")
+	}
+
+	operandExprNodes := make([]ExprNode, 0, len(c.operandList))
+	for _, ope := range c.operandList {
+		exprNodes, err := ope.BuildOperand()
+		if err != nil {
+			return ExprNode{}, err
+		}
+		operandExprNodes = append(operandExprNodes, exprNodes)
+	}
+
+	ret := ExprNode{
+		children: operandExprNodes,
+	}
+
+	// Create a string with special characters that can be substituted later: $c
+	switch c.Mode {
+	case EqualCond:
+		ret.fmtExpr = "$c = $c"
+	}
+
+	return ret, nil
+>>>>>>> d753f586ade03ef8fa60c18037e2679ee424ee0b
 }

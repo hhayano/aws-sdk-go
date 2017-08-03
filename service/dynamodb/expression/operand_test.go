@@ -92,18 +92,30 @@ func TestBuildOperand(t *testing.T) {
 
 		if c.emptyPathError {
 			if err == nil {
+<<<<<<< HEAD
 				t.Errorf("TestBuildOperand %#v: Expected Error", c.name)
+=======
+				t.Errorf("Test %#v: Expected Error", c.name)
+>>>>>>> d753f586ade03ef8fa60c18037e2679ee424ee0b
 			} else {
 				continue
 			}
 		}
 
 		if err != nil {
+<<<<<<< HEAD
 			t.Errorf("TestBuildOperand %#v: Unexpected Error %#v", c.name, err)
 		}
 
 		if reflect.DeepEqual(c.expected, en) == false {
 			t.Errorf("TestBuildOperand %#v: Got %#v, expected %#v\n", c.name, en, c.expected)
+=======
+			t.Errorf("Test %#v: Unexpected Error %#v", c.name, err)
+		}
+
+		if reflect.DeepEqual(c.expected, en) == false {
+			t.Errorf("Test %#v: Got %#v, expected %#v\n", c.name, en, c.expected)
+>>>>>>> d753f586ade03ef8fa60c18037e2679ee424ee0b
 		}
 	}
 }
@@ -289,7 +301,11 @@ func TestBuildExpression(t *testing.T) {
 		if c.nilAliasListError {
 			_, err := c.input.buildExprNodes(nil)
 			if err == nil {
+<<<<<<< HEAD
 				t.Errorf("TestBuildExpression %#v: Expected Error", c.name)
+=======
+				t.Errorf("Test %#v: Expected Error", c.name)
+>>>>>>> d753f586ade03ef8fa60c18037e2679ee424ee0b
 			} else {
 				continue
 			}
@@ -298,17 +314,29 @@ func TestBuildExpression(t *testing.T) {
 		expr, err := c.input.buildExprNodes(&aliasList{})
 		if c.invalEscError || c.outOfRangeError {
 			if err == nil {
+<<<<<<< HEAD
 				t.Errorf("TestBuildExpression %#v: Expected Error", c.name)
+=======
+				t.Errorf("Test %#v: Expected Error", c.name)
+>>>>>>> d753f586ade03ef8fa60c18037e2679ee424ee0b
 			} else {
 				continue
 			}
 		}
 		if err != nil {
+<<<<<<< HEAD
 			t.Errorf("TestBuildExpression %#v: Unexpected Error %#v", c.name, err)
 		}
 
 		if reflect.DeepEqual(expr, c.expected) != true {
 			t.Errorf("TestBuildExpression %#v: Expected %#v, got %#v", c.name, c.expected, expr)
+=======
+			t.Errorf("Test %#v: Unexpected Error %#v", c.name, err)
+		}
+
+		if reflect.DeepEqual(expr, c.expected) != true {
+			t.Errorf("Test %#v: Expected %#v, got %#v", c.name, c.expected, expr)
+>>>>>>> d753f586ade03ef8fa60c18037e2679ee424ee0b
 		}
 	}
 }
