@@ -9,51 +9,32 @@ import (
 	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
 )
 
-<<<<<<< HEAD
 // ValueBuilder represents a value operand and will implement the OperandBuilder
 // interface. It will have various methods corresponding to the operations
 // supported by DynamoDB operations. (i.e. AND, BETWEEN, EQUALS) The underlying
 // undefined type member variable will be converted into dynamodb.AttributeValue
 // by dynamodbattribute.Marshal(in) when Expressions are created.
-=======
-// ValueBuilder will be the concrete struct that satisfies the OperandBuilder
-// interface. It will have various methods corresponding to the operations
-// supported in ConditionExpressions
->>>>>>> d753f586ade03ef8fa60c18037e2679ee424ee0b
 type ValueBuilder struct {
 	value interface{}
 }
 
-<<<<<<< HEAD
 // PathBuilder represents a path to either a top level item attribute or a
 // nested attribute. It will implement the OperandBuilder interface. It will
 // have various methods corresponding to the operations supported by DynamoDB
 // operations. (i.e. AND, BETWEEN, EQUALS)
-=======
-// PathBuilder will be the concrete struct that satisfies the OperandBuilder
-// interface. It will have various methods corresponding to the operations
-// supported in ConditionExpressions
->>>>>>> d753f586ade03ef8fa60c18037e2679ee424ee0b
 type PathBuilder struct {
 	path string
 }
 
-<<<<<<< HEAD
 // SizeBuilder represents the output of the function size (path), which
 // evaluates to the size of the item attribute defined by path. Size builder
 // will implement OperandBuilder interface. It will have various methods
 // corresponding to the operations supported by DynamoDB operations.
 // (i.e. AND, BETWEEN, EQUALS)
-=======
-// SizeBuilder will implement OperandBuilder thus being an Operand. This
-// reflects the fact that the function Size() returns type that is used in place
-// of an Operand
->>>>>>> d753f586ade03ef8fa60c18037e2679ee424ee0b
 type SizeBuilder struct {
 	pb PathBuilder
 }
 
-<<<<<<< HEAD
 // Expression contains the map of aliases to names/values, representing the
 // ExpressionAttributeNames and ExpressionAttributeValues, that is needed in
 // order for the Expression string to be used in an operation input.
@@ -74,17 +55,12 @@ type SizeBuilder struct {
 // 	},
 // 	TableName: aws.String("SomeTable"),
 // }
-=======
-// Expression implements the expressions in DynamoDB. DynamoDB operation inputs
-// take maps of aliases to pointers and strings to represent expressions.
->>>>>>> d753f586ade03ef8fa60c18037e2679ee424ee0b
 type Expression struct {
 	Names      map[string]*string
 	Values     map[string]*dynamodb.AttributeValue
 	Expression string
 }
 
-<<<<<<< HEAD
 // ExprNode will be the generic nodes that will represent both Operands and
 // Conditions. The purpose of ExprNode is to be able to call an generic
 // recursive function on the top level ExprNode to be able to determine a root
@@ -98,10 +74,6 @@ type Expression struct {
 //		 corresponding value to be aliased will be in the []values slice.
 // $c: Indicates that the fmtExpr of a child ExprNode needs to be inserted. The
 // 		 corresponding child node is in the []children slice.
-=======
-// ExprNode will be the nodes to the inward facing tree which all the
-// deduplication and aliasing will work on
->>>>>>> d753f586ade03ef8fa60c18037e2679ee424ee0b
 type ExprNode struct {
 	names    []string
 	values   []dynamodb.AttributeValue
@@ -109,7 +81,6 @@ type ExprNode struct {
 	fmtExpr  string
 }
 
-<<<<<<< HEAD
 // OperandBuilder represents the idea of Operand which are building blocks to
 // DynamoDB Expressions. OperandBuilders will be children of ConditionBuilders
 // to represent a tree like structure of Expression dependencies. The method
@@ -117,16 +88,10 @@ type ExprNode struct {
 // representation of both Operands and Conditions. BuildOperand() will mainly
 // be called recursively by the BuildExpression() method call when Expressions
 // are built from ConditionBuilders
-=======
-// OperandBuilder will be mainly satisfied by PathBuilder and ValueBuilder.
-// Concrete types that satisfy this interface will be referred to as an Operand
-// In select cases, other builders may satisfy this interface
->>>>>>> d753f586ade03ef8fa60c18037e2679ee424ee0b
 type OperandBuilder interface {
 	BuildOperand() (ExprNode, error)
 }
 
-<<<<<<< HEAD
 // NewPath creates a PathBuilder, which implements the OperandBuilder interface.
 // NewPath will mainly be called in a pattern in order to create
 // ConditionBuilders.
@@ -134,16 +99,12 @@ type OperandBuilder interface {
 // Example:
 //
 // condition := NewPath("foo").Equal(NewPath("bar"))
-=======
-// NewPath creates an Operand based off of the path entered
->>>>>>> d753f586ade03ef8fa60c18037e2679ee424ee0b
 func NewPath(p string) PathBuilder {
 	return PathBuilder{
 		path: p,
 	}
 }
 
-<<<<<<< HEAD
 // NewValue creates a ValueBuilder, which implements the OperandBuilder
 // interface. NewValue will mainly be called in a pattern in order to create
 // ConditionBuilders.
@@ -151,39 +112,27 @@ func NewPath(p string) PathBuilder {
 // Example:
 //
 // condition := NewPath("foo").Equal(NewValue(10))
-=======
-// NewValue creates an Operand based of the value entered
->>>>>>> d753f586ade03ef8fa60c18037e2679ee424ee0b
 func NewValue(v interface{}) ValueBuilder {
 	return ValueBuilder{
 		value: v,
 	}
 }
 
-<<<<<<< HEAD
 // Size creates a SizeBuilder, which implements the OperandBuilder interface.
 // Size will mainly be called in a pattern in order to create ConditionBuilders.
 //
 // Example:
 //
 // condition := NewPath("foo").Size().Equal(NewValue(10))
-=======
-// Size returns a SizeBuilder which satisfies the OperandBuilder interface.
->>>>>>> d753f586ade03ef8fa60c18037e2679ee424ee0b
 func (p PathBuilder) Size() SizeBuilder {
 	return SizeBuilder{
 		pb: p,
 	}
 }
 
-<<<<<<< HEAD
 // BuildOperand will create the ExprNode which is a generic representation of
 // Operands and Conditions. BuildOperand() is mainly for the BuildExpression()
 // method to call on, not for users to invoke.
-=======
-// BuildOperand will create the ExprNode which will be recursively
-// called in the BuildExpression operation
->>>>>>> d753f586ade03ef8fa60c18037e2679ee424ee0b
 func (p PathBuilder) BuildOperand() (ExprNode, error) {
 	if p.path == "" {
 		return ExprNode{}, fmt.Errorf("BuildOperand Error: Path is empty")
@@ -224,14 +173,9 @@ func (p PathBuilder) BuildOperand() (ExprNode, error) {
 	return ret, nil
 }
 
-<<<<<<< HEAD
 // BuildOperand will create the ExprNode which is a generic representation of
 // Operands and Conditions. BuildOperand() is mainly for the BuildExpression()
 // method to call on, not for users to invoke.
-=======
-// BuildOperand will create the ExprNode which will be recursively
-// called in the BuildExpression operation
->>>>>>> d753f586ade03ef8fa60c18037e2679ee424ee0b
 func (v ValueBuilder) BuildOperand() (ExprNode, error) {
 	expr, err := dynamodbattribute.Marshal(v.value)
 	if err != nil {
@@ -246,14 +190,9 @@ func (v ValueBuilder) BuildOperand() (ExprNode, error) {
 	return ret, nil
 }
 
-<<<<<<< HEAD
 // BuildOperand will create the ExprNode which is a generic representation of
 // Operands and Conditions. BuildOperand() is mainly for the BuildExpression()
 // method to call on, not for users to invoke.
-=======
-// BuildOperand will create the ExprNode which will be recursively
-// called in the BuildExpression operation
->>>>>>> d753f586ade03ef8fa60c18037e2679ee424ee0b
 func (s SizeBuilder) BuildOperand() (ExprNode, error) {
 	ret, err := s.pb.BuildOperand()
 	ret.fmtExpr = "size (" + ret.fmtExpr + ")"
@@ -262,36 +201,23 @@ func (s SizeBuilder) BuildOperand() (ExprNode, error) {
 }
 
 // aliasList will keep track of all the names we need to alias in the nested
-<<<<<<< HEAD
 // struct of conditions and operands. This will allow each alias to be unique.
 // aliasList will be passed in as a pointer when buildExprNodes is called in
 // order to deduplicate all names within the tree strcuture of the ExprNodes.
-=======
-// struct of conditions and operands. This will allow each alias to be unique
-// while deduplicating aliases.
->>>>>>> d753f586ade03ef8fa60c18037e2679ee424ee0b
 type aliasList struct {
 	namesList  []string
 	valuesList []dynamodb.AttributeValue
 }
 
-<<<<<<< HEAD
 // buildExpression returns an Expression with aliasing for paths/values
 // specified by aliasList
-=======
-// buildExpression returns an Expression with aliasing for paths/values specified
-// by aliasList
->>>>>>> d753f586ade03ef8fa60c18037e2679ee424ee0b
 func (en ExprNode) buildExprNodes(al *aliasList) (Expression, error) {
 	if al == nil {
 		return Expression{}, fmt.Errorf("buildExprNodes Error: aliasList is nil")
 	}
 
-<<<<<<< HEAD
 	// Since each ExprNode contains a slice of names, values, and children that
 	// correspond to the escaped characters, we an index to traverse the slices
-=======
->>>>>>> d753f586ade03ef8fa60c18037e2679ee424ee0b
 	index := struct {
 		name, value, children int
 	}{}
@@ -371,12 +297,9 @@ func (en ExprNode) buildExprNodes(al *aliasList) (Expression, error) {
 	return expr, nil
 }
 
-<<<<<<< HEAD
 // aliasValue returns the corresponding alias to the dav value argument. Since
 // values are not deduplicated as of now, all values are just appended to the
 // aliasList and given the index as the alias.
-=======
->>>>>>> d753f586ade03ef8fa60c18037e2679ee424ee0b
 func (al *aliasList) aliasValue(dav dynamodb.AttributeValue) (string, error) {
 	// for ind, attrval := range al.valuesList {
 	// 	if reflect.DeepEqual(dav, attrval) {
@@ -395,12 +318,9 @@ func (al *aliasList) aliasValue(dav dynamodb.AttributeValue) (string, error) {
 	return fmt.Sprintf(":%d", len(al.valuesList)-1), nil
 }
 
-<<<<<<< HEAD
 // aliasPath returns the corresponding alias to the argument string. The
 // argument is checked against all existing aliasList names in order to avoid
 // duplicate strings getting two different aliases.
-=======
->>>>>>> d753f586ade03ef8fa60c18037e2679ee424ee0b
 func (al *aliasList) aliasPath(nm string) (string, error) {
 	if al == nil {
 		return "", fmt.Errorf("aliasValue Error: aliasList is nil")
@@ -415,11 +335,7 @@ func (al *aliasList) aliasPath(nm string) (string, error) {
 	return fmt.Sprintf("#%d", len(al.namesList)-1), nil
 }
 
-<<<<<<< HEAD
 // mergeExpressionMaps merges maps of multiple Expressions
-=======
-// mergeExpressionMaps merges maps of multiple expressions
->>>>>>> d753f586ade03ef8fa60c18037e2679ee424ee0b
 func mergeExpressionMaps(lists ...[]Expression) (Expression, error) {
 	ret := Expression{}
 	for _, list := range lists {
