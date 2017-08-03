@@ -37,10 +37,10 @@ type ConditionBuilder struct {
 //
 // Example:
 //
-// condition := expression.Equal(expression.NewPath("foo"), expression.NewValue(5))
+//     condition := expression.Equal(expression.NewPath("foo"), expression.NewValue(5))
 //
-// anotherCondition := expression.Not(condition)	// Used in another condition
-// expression, err := condition.BuildExpression()	// Used to make an Expression
+//     anotherCondition := expression.Not(condition)	// Used in another condition
+//     expression, err := condition.BuildExpression()	// Used to make an Expression
 func Equal(left, right OperandBuilder) ConditionBuilder {
 	return ConditionBuilder{
 		operandList: []OperandBuilder{left, right},
@@ -52,9 +52,9 @@ func Equal(left, right OperandBuilder) ConditionBuilder {
 //
 // Example:
 //
-// The following produce equivalent conditions:
-// condition := expression.Equal(expression.NewPath("foo"), expression.NewValue(5))
-// condition := expression.NewPath("foo").Equal(expression.NewValue(5))
+//     // The following produce equivalent conditions:
+//     condition := expression.Equal(expression.NewPath("foo"), expression.NewValue(5))
+//     condition := expression.NewPath("foo").Equal(expression.NewValue(5))
 func (p PathBuilder) Equal(right OperandBuilder) ConditionBuilder {
 	return Equal(p, right)
 }
@@ -64,9 +64,9 @@ func (p PathBuilder) Equal(right OperandBuilder) ConditionBuilder {
 //
 // Example:
 //
-// The following produce equivalent conditions:
-// condition := expression.Equal(expression.NewValue(10), expression.NewValue(5))
-// condition := expression.NewValue(10).Equal(expression.NewValue(5))
+//     // The following produce equivalent conditions:
+//     condition := expression.Equal(expression.NewValue(10), expression.NewValue(5))
+//     condition := expression.NewValue(10).Equal(expression.NewValue(5))
 func (v ValueBuilder) Equal(right OperandBuilder) ConditionBuilder {
 	return Equal(v, right)
 }
@@ -75,9 +75,9 @@ func (v ValueBuilder) Equal(right OperandBuilder) ConditionBuilder {
 //
 // Example:
 //
-// The following produce equivalent conditions:
-// condition := expression.Equal(expression.NewPath("foo").Size(), expression.NewValue(5))
-// condition := expression.NewPath("foo").Size().Equal(expression.NewValue(5))
+//     The following produce equivalent conditions:
+//     condition := expression.Equal(expression.NewPath("foo").Size(), expression.NewValue(5))
+//     condition := expression.NewPath("foo").Size().Equal(expression.NewValue(5))
 func (s SizeBuilder) Equal(right OperandBuilder) ConditionBuilder {
 	return Equal(s, right)
 }
@@ -90,13 +90,13 @@ func (s SizeBuilder) Equal(right OperandBuilder) ConditionBuilder {
 //
 // Example:
 //
-// condition1 := expression.Equal(expression.NewPath("foo"), expression.NewValue(5))
-// condition2 := expression.Less(expression.NewPath("bar"), expression.NewValue(2010))
-// condition3 := expression.NewPath("baz").Between(expression.NewValue(2), expression.NewValue(10))
-// andCondition := expression.And(condition1, condition2, condition3)
+//     condition1 := expression.Equal(expression.NewPath("foo"), expression.NewValue(5))
+//     condition2 := expression.Less(expression.NewPath("bar"), expression.NewValue(2010))
+//     condition3 := expression.NewPath("baz").Between(expression.NewValue(2), expression.NewValue(10))
+//     andCondition := expression.And(condition1, condition2, condition3)
 //
-// anotherCondition := expression.Not(andCondition)		// Used in another condition
-// expression, err := andCondition.BuildExpression()	// Used to make an Expression
+//     anotherCondition := expression.Not(andCondition)		// Used in another condition
+//     expression, err := andCondition.BuildExpression()	// Used to make an Expression
 func And(cond ...ConditionBuilder) ConditionBuilder {
 	return ConditionBuilder{
 		conditionList: cond,
@@ -108,9 +108,9 @@ func And(cond ...ConditionBuilder) ConditionBuilder {
 //
 // Example:
 //
-// The following produce equivalent conditions:
-// condition := expression.And(condition1, condition2, condition3)
-// condition := condition1.And(condition2, condition3)
+//     // The following produce equivalent conditions:
+//     condition := expression.And(condition1, condition2, condition3)
+//     condition := condition1.And(condition2, condition3)
 func (cond ConditionBuilder) And(right ...ConditionBuilder) ConditionBuilder {
 	right = append(right, cond)
 	return And(right...)
@@ -126,10 +126,10 @@ func (cond ConditionBuilder) And(right ...ConditionBuilder) ConditionBuilder {
 //
 // Example:
 //
-// condition := expression.Between(expression.NewPath("foo"), expression.NewValue(2), expression.NewValue(6))
+//     condition := expression.Between(expression.NewPath("foo"), expression.NewValue(2), expression.NewValue(6))
 //
-// anotherCondition := expression.Not(condition)	// Used in another condition
-// expression, err := condition.BuildExpression()	// Used to make an Expression
+//     anotherCondition := expression.Not(condition)	// Used in another condition
+//     expression, err := condition.BuildExpression()	// Used to make an Expression
 func Between(ope, lower, upper OperandBuilder) ConditionBuilder {
 	return ConditionBuilder{
 		operandList: []OperandBuilder{ope, lower, upper},
@@ -142,9 +142,9 @@ func Between(ope, lower, upper OperandBuilder) ConditionBuilder {
 //
 // Example:
 //
-// The following produce equivalent conditions:
-// condition := expression.Between(operand1, operand2, operand3)
-// condition := operand1.Between(operand2, operand3)
+//     // The following produce equivalent conditions:
+//     condition := expression.Between(operand1, operand2, operand3)
+//     condition := operand1.Between(operand2, operand3)
 func (p PathBuilder) Between(lower, upper OperandBuilder) ConditionBuilder {
 	return Between(p, lower, upper)
 }
@@ -154,9 +154,9 @@ func (p PathBuilder) Between(lower, upper OperandBuilder) ConditionBuilder {
 //
 // Example:
 //
-// The following produce equivalent conditions:
-// condition := expression.Between(operand1, operand2, operand3)
-// condition := operand1.Between(operand2, operand3)
+//     // The following produce equivalent conditions:
+//     condition := expression.Between(operand1, operand2, operand3)
+//     condition := operand1.Between(operand2, operand3)
 func (v ValueBuilder) Between(lower, upper OperandBuilder) ConditionBuilder {
 	return Between(v, lower, upper)
 }
@@ -166,9 +166,9 @@ func (v ValueBuilder) Between(lower, upper OperandBuilder) ConditionBuilder {
 //
 // Example:
 //
-// The following produce equivalent conditions:
-// condition := expression.Between(operand1, operand2, operand3)
-// condition := operand1.Between(operand2, operand3)
+//     // The following produce equivalent conditions:
+//     condition := expression.Between(operand1, operand2, operand3)
+//     condition := operand1.Between(operand2, operand3)
 func (s SizeBuilder) Between(lower, upper OperandBuilder) ConditionBuilder {
 	return Between(s, lower, upper)
 }
@@ -180,19 +180,19 @@ func (s SizeBuilder) Between(lower, upper OperandBuilder) ConditionBuilder {
 //
 // Example:
 //
-// expr, err := someCondition.BuildExpression()
+//     expr, err := someCondition.BuildExpression()
 //
-// deleteInput := dynamodb.DeleteItemInput{
-// 	ConditionExpression:				aws.String(expr.Expression),
-// 	ExpressionAttributeNames:		expr.Names,
-// 	ExpressionAttributeValues:	expr.Values,
-// 	Key: map[string]*dynamodb.AttributeValue{
-// 		"PartitionKey": &dynamodb.AttributeValue{
-// 			S: aws.String("SomeKey"),
-// 		},
-// 	},
-// 	TableName: aws.String("SomeTable"),
-// }
+//     deleteInput := dynamodb.DeleteItemInput{
+//       ConditionExpression:       aws.String(expr.Expression),
+// 	     ExpressionAttributeNames:  expr.Names,
+//       ExpressionAttributeValues: expr.Values,
+//       Key: map[string]*dynamodb.AttributeValue{
+//         "PartitionKey": &dynamodb.AttributeValue{
+//           S: aws.String("SomeKey"),
+//         },
+//       },
+//       TableName: aws.String("SomeTable"),
+//     }
 func (cond ConditionBuilder) BuildExpression() (Expression, error) {
 	en, err := cond.buildCondition()
 	if err != nil {

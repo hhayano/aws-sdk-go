@@ -42,19 +42,19 @@ type SizeBuilder struct {
 //
 // Example:
 //
-// let expr be an instance of Expression{}
+//     // let expr be an instance of Expression{}
 //
-// deleteInput := dynamodb.DeleteItemInput{
-// 	ConditionExpression:				aws.String(expr.Expression),
-// 	ExpressionAttributeNames:		expr.Names,
-// 	ExpressionAttributeValues:	expr.Values,
-// 	Key: map[string]*dynamodb.AttributeValue{
-// 		"PartitionKey": &dynamodb.AttributeValue{
-// 			S: aws.String("SomeKey"),
-// 		},
-// 	},
-// 	TableName: aws.String("SomeTable"),
-// }
+//     deleteInput := dynamodb.DeleteItemInput{
+//       ConditionExpression:       aws.String(expr.Expression),
+//       ExpressionAttributeNames:  expr.Names,
+//       ExpressionAttributeValues: expr.Values,
+//       Key: map[string]*dynamodb.AttributeValue{
+//         "PartitionKey": &dynamodb.AttributeValue{
+//           S: aws.String("SomeKey"),
+//         },
+//       },
+//       TableName: aws.String("SomeTable"),
+//     }
 type Expression struct {
 	Names      map[string]*string
 	Values     map[string]*dynamodb.AttributeValue
@@ -68,12 +68,12 @@ type Expression struct {
 // fmtExpr is a string that has escaped characters to refer to
 // names/values/children which needs to be aliased at runtime in order to avoid
 // duplicate values. The rules are as follows:
-// $p: Indicates that an alias of a name needs to be inserted. The corresponding
-//		 name to be aliased will be in the []names slice.
-// $v: Indicates that an alias of a value needs to be inserted. The
-//		 corresponding value to be aliased will be in the []values slice.
-// $c: Indicates that the fmtExpr of a child ExprNode needs to be inserted. The
-// 		 corresponding child node is in the []children slice.
+//     $p: Indicates that an alias of a name needs to be inserted. The corresponding
+//         name to be aliased will be in the []names slice.
+//     $v: Indicates that an alias of a value needs to be inserted. The
+//         corresponding value to be aliased will be in the []values slice.
+//     $c: Indicates that the fmtExpr of a child ExprNode needs to be inserted. The
+//         corresponding child node is in the []children slice.
 type ExprNode struct {
 	names    []string
 	values   []dynamodb.AttributeValue
@@ -98,7 +98,7 @@ type OperandBuilder interface {
 //
 // Example:
 //
-// condition := NewPath("foo").Equal(NewPath("bar"))
+//     condition := NewPath("foo").Equal(NewPath("bar"))
 func NewPath(p string) PathBuilder {
 	return PathBuilder{
 		path: p,
@@ -111,7 +111,7 @@ func NewPath(p string) PathBuilder {
 //
 // Example:
 //
-// condition := NewPath("foo").Equal(NewValue(10))
+//     condition := NewPath("foo").Equal(NewValue(10))
 func NewValue(v interface{}) ValueBuilder {
 	return ValueBuilder{
 		value: v,
@@ -123,7 +123,7 @@ func NewValue(v interface{}) ValueBuilder {
 //
 // Example:
 //
-// condition := NewPath("foo").Size().Equal(NewValue(10))
+//     condition := NewPath("foo").Size().Equal(NewValue(10))
 func (p PathBuilder) Size() SizeBuilder {
 	return SizeBuilder{
 		pb: p,
