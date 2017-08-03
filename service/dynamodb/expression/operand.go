@@ -143,7 +143,9 @@ func (p PathBuilder) BuildOperand() (ExprNode, error) {
 	}
 
 	nameSplit := strings.Split(p.path, ".")
-	for i, word := range nameSplit {
+	fmtNames := make([]string, 0, len(nameSplit))
+
+	for _, word := range nameSplit {
 		var substr string
 		if word == "" {
 			return ExprNode{}, fmt.Errorf("BuildOperand Error: invalid path")
@@ -165,11 +167,9 @@ func (p PathBuilder) BuildOperand() (ExprNode, error) {
 
 		// Create a string with special characters that can be substituted later: $p
 		ret.names = append(ret.names, word)
-		ret.fmtExpr += "$p" + substr
-		if i != len(nameSplit)-1 {
-			ret.fmtExpr += "."
-		}
+		fmtNames = append(fmtNames, "$p"+substr)
 	}
+	ret.fmtExpr = strings.Join(fmtNames, ".")
 	return ret, nil
 }
 

@@ -1,6 +1,9 @@
 package expression
 
-import "fmt"
+import (
+	"fmt"
+	"strings"
+)
 
 // ConditionMode will specify the types of the struct ConditionBuilder,
 // representing the different types of Conditions (i.e. And, Or, Between, ...)
@@ -268,15 +271,13 @@ func compoundBuildCondition(c ConditionBuilder) (ExprNode, error) {
 
 	// create a string with escaped characters to substitute them with proper
 	// aliases during runtime
-	for ind := range c.conditionList {
-		ret.fmtExpr += "($c)"
-		if ind != len(c.conditionList)-1 {
-			switch c.Mode {
-			case AndCond:
-				ret.fmtExpr += " AND "
-			}
-		}
+	var mode string
+	switch c.Mode {
+	case AndCond:
+		mode = " AND "
 	}
+
+	ret.fmtExpr = "($c)" + strings.Repeat(mode+"($c)", len(c.conditionList)-1)
 
 	return ret, nil
 }
