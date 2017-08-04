@@ -1,6 +1,9 @@
 package expression
 
-import "fmt"
+import (
+	"fmt"
+	"strings"
+)
 
 // ConditionMode will specify the types of the struct ConditionBuilder,
 // representing the different types of Conditions (i.e. And, Or, Between, ...)
@@ -16,6 +19,23 @@ const (
 	// BetweenCond will represent the Between ConditionBuilder
 	BetweenCond
 )
+
+// String will satisfy the Stringer interface in order for Error outputs to be
+// more readable.
+func (cm ConditionMode) String() string {
+	switch cm {
+	case UnsetCond:
+		return "UnsetCond"
+	case EqualCond:
+		return "EqualCond"
+	case AndCond:
+		return "AndCond"
+	case BetweenCond:
+		return "BetweenCond"
+	default:
+		return "no matching ConditionMode"
+	}
+}
 
 // ConditionBuilder will represent the ConditionExpressions in DynamoDB. It is
 // composed of operands (OperandBuilder) and other conditions (ConditionBuilder)
@@ -37,10 +57,10 @@ type ConditionBuilder struct {
 //
 // Example:
 //
-// condition := expression.Equal(expression.NewPath("foo"), expression.NewValue(5))
+//     condition := expression.Equal(expression.Path("foo"), expression.Value(5))
 //
-// anotherCondition := expression.Not(condition)	// Used in another condition
-// expression, err := condition.BuildExpression()	// Used to make an Expression
+//     anotherCondition := expression.Not(condition)	// Used in another condition
+//     expression, err := condition.BuildExpression()	// Used to make an Expression
 func Equal(left, right OperandBuilder) ConditionBuilder {
 	return ConditionBuilder{
 		operandList: []OperandBuilder{left, right},
@@ -52,9 +72,9 @@ func Equal(left, right OperandBuilder) ConditionBuilder {
 //
 // Example:
 //
-// The following produce equivalent conditions:
-// condition := expression.Equal(expression.NewPath("foo"), expression.NewValue(5))
-// condition := expression.NewPath("foo").Equal(expression.NewValue(5))
+//     // The following produce equivalent conditions:
+//     condition := expression.Equal(expression.Path("foo"), expression.Value(5))
+//     condition := expression.Path("foo").Equal(expression.Value(5))
 func (p PathBuilder) Equal(right OperandBuilder) ConditionBuilder {
 	return Equal(p, right)
 }
@@ -64,9 +84,9 @@ func (p PathBuilder) Equal(right OperandBuilder) ConditionBuilder {
 //
 // Example:
 //
-// The following produce equivalent conditions:
-// condition := expression.Equal(expression.NewValue(10), expression.NewValue(5))
-// condition := expression.NewValue(10).Equal(expression.NewValue(5))
+//     // The following produce equivalent conditions:
+//     condition := expression.Equal(expression.Value(10), expression.Value(5))
+//     condition := expression.Value(10).Equal(expression.Value(5))
 func (v ValueBuilder) Equal(right OperandBuilder) ConditionBuilder {
 	return Equal(v, right)
 }
@@ -75,9 +95,9 @@ func (v ValueBuilder) Equal(right OperandBuilder) ConditionBuilder {
 //
 // Example:
 //
-// The following produce equivalent conditions:
-// condition := expression.Equal(expression.NewPath("foo").Size(), expression.NewValue(5))
-// condition := expression.NewPath("foo").Size().Equal(expression.NewValue(5))
+//     The following produce equivalent conditions:
+//     condition := expression.Equal(expression.Path("foo").Size(), expression.Value(5))
+//     condition := expression.Path("foo").Size().Equal(expression.Value(5))
 func (s SizeBuilder) Equal(right OperandBuilder) ConditionBuilder {
 	return Equal(s, right)
 }
@@ -90,16 +110,17 @@ func (s SizeBuilder) Equal(right OperandBuilder) ConditionBuilder {
 //
 // Example:
 //
-// condition1 := expression.Equal(expression.NewPath("foo"), expression.NewValue(5))
-// condition2 := expression.Less(expression.NewPath("bar"), expression.NewValue(2010))
-// condition3 := expression.NewPath("baz").Between(expression.NewValue(2), expression.NewValue(10))
-// andCondition := expression.And(condition1, condition2, condition3)
+//     condition1 := expression.Equal(expression.Path("foo"), expression.Value(5))
+//     condition2 := expression.Less(expression.Path("bar"), expression.Value(2010))
+//     condition3 := expression.Path("baz").Between(expression.Value(2), expression.Value(10))
+//     andCondition := expression.And(condition1, condition2, condition3)
 //
-// anotherCondition := expression.Not(andCondition)		// Used in another condition
-// expression, err := andCondition.BuildExpression()	// Used to make an Expression
-func And(cond ...ConditionBuilder) ConditionBuilder {
+//     anotherCondition := expression.Not(andCondition)		// Used in another condition
+//     expression, err := andCondition.BuildExpression()	// Used to make an Expression
+func And(left, right ConditionBuilder, other ...ConditionBuilder) ConditionBuilder {
+	other = append([]ConditionBuilder{left, right}, other...)
 	return ConditionBuilder{
-		conditionList: cond,
+		conditionList: other,
 		Mode:          AndCond,
 	}
 }
@@ -108,12 +129,11 @@ func And(cond ...ConditionBuilder) ConditionBuilder {
 //
 // Example:
 //
-// The following produce equivalent conditions:
-// condition := expression.And(condition1, condition2, condition3)
-// condition := condition1.And(condition2, condition3)
-func (cond ConditionBuilder) And(right ...ConditionBuilder) ConditionBuilder {
-	right = append(right, cond)
-	return And(right...)
+//     // The following produce equivalent conditions:
+//     condition := expression.And(condition1, condition2, condition3)
+//     condition := condition1.And(condition2, condition3)
+func (cond ConditionBuilder) And(right ConditionBuilder, other ...ConditionBuilder) ConditionBuilder {
+	return And(cond, right, other...)
 }
 
 // Between will create a ConditionBuilder with three operands as children, the
@@ -126,10 +146,10 @@ func (cond ConditionBuilder) And(right ...ConditionBuilder) ConditionBuilder {
 //
 // Example:
 //
-// condition := expression.Between(expression.NewPath("foo"), expression.NewValue(2), expression.NewValue(6))
+//     condition := expression.Between(expression.Path("foo"), expression.Value(2), expression.Value(6))
 //
-// anotherCondition := expression.Not(condition)	// Used in another condition
-// expression, err := condition.BuildExpression()	// Used to make an Expression
+//     anotherCondition := expression.Not(condition)	// Used in another condition
+//     expression, err := condition.BuildExpression()	// Used to make an Expression
 func Between(ope, lower, upper OperandBuilder) ConditionBuilder {
 	return ConditionBuilder{
 		operandList: []OperandBuilder{ope, lower, upper},
@@ -142,9 +162,9 @@ func Between(ope, lower, upper OperandBuilder) ConditionBuilder {
 //
 // Example:
 //
-// The following produce equivalent conditions:
-// condition := expression.Between(operand1, operand2, operand3)
-// condition := operand1.Between(operand2, operand3)
+//     // The following produce equivalent conditions:
+//     condition := expression.Between(operand1, operand2, operand3)
+//     condition := operand1.Between(operand2, operand3)
 func (p PathBuilder) Between(lower, upper OperandBuilder) ConditionBuilder {
 	return Between(p, lower, upper)
 }
@@ -154,9 +174,9 @@ func (p PathBuilder) Between(lower, upper OperandBuilder) ConditionBuilder {
 //
 // Example:
 //
-// The following produce equivalent conditions:
-// condition := expression.Between(operand1, operand2, operand3)
-// condition := operand1.Between(operand2, operand3)
+//     // The following produce equivalent conditions:
+//     condition := expression.Between(operand1, operand2, operand3)
+//     condition := operand1.Between(operand2, operand3)
 func (v ValueBuilder) Between(lower, upper OperandBuilder) ConditionBuilder {
 	return Between(v, lower, upper)
 }
@@ -166,9 +186,9 @@ func (v ValueBuilder) Between(lower, upper OperandBuilder) ConditionBuilder {
 //
 // Example:
 //
-// The following produce equivalent conditions:
-// condition := expression.Between(operand1, operand2, operand3)
-// condition := operand1.Between(operand2, operand3)
+//     // The following produce equivalent conditions:
+//     condition := expression.Between(operand1, operand2, operand3)
+//     condition := operand1.Between(operand2, operand3)
 func (s SizeBuilder) Between(lower, upper OperandBuilder) ConditionBuilder {
 	return Between(s, lower, upper)
 }
@@ -180,19 +200,19 @@ func (s SizeBuilder) Between(lower, upper OperandBuilder) ConditionBuilder {
 //
 // Example:
 //
-// expr, err := someCondition.BuildExpression()
+//     expr, err := someCondition.BuildExpression()
 //
-// deleteInput := dynamodb.DeleteItemInput{
-// 	ConditionExpression:				aws.String(expr.Expression),
-// 	ExpressionAttributeNames:		expr.Names,
-// 	ExpressionAttributeValues:	expr.Values,
-// 	Key: map[string]*dynamodb.AttributeValue{
-// 		"PartitionKey": &dynamodb.AttributeValue{
-// 			S: aws.String("SomeKey"),
-// 		},
-// 	},
-// 	TableName: aws.String("SomeTable"),
-// }
+//     deleteInput := dynamodb.DeleteItemInput{
+//       ConditionExpression:       aws.String(expr.Expression),
+// 	     ExpressionAttributeNames:  expr.Names,
+//       ExpressionAttributeValues: expr.Values,
+//       Key: map[string]*dynamodb.AttributeValue{
+//         "PartitionKey": &dynamodb.AttributeValue{
+//           S: aws.String("SomeKey"),
+//         },
+//       },
+//       TableName: aws.String("SomeTable"),
+//     }
 func (cond ConditionBuilder) BuildExpression() (Expression, error) {
 	en, err := cond.buildCondition()
 	if err != nil {
@@ -218,14 +238,20 @@ func (cond ConditionBuilder) buildCondition() (ExprNode, error) {
 	case BetweenCond:
 		return betweenBuildCondition(cond)
 	}
-	return ExprNode{}, fmt.Errorf("No matching Mode to %v", cond.Mode)
+	return ExprNode{}, fmt.Errorf("buildCondition error: no matching ConditionMode to %v", cond.Mode)
 }
 
 // compareBuildCondition is the function to make ExprNodes from Compare
 // ConditionBuilders. There will first be checks to make sure that the input
 // ConditionBuilder has the correct format.
 func compareBuildCondition(c ConditionBuilder) (ExprNode, error) {
-	childNodes, err := buildChildNodes(c, 2, 0)
+	if len(c.operandList) != 2 {
+		return ExprNode{}, fmt.Errorf("betweenBuildCondition error: unexpected number of operands, expected 2 operands")
+	}
+	if len(c.conditionList) != 0 {
+		return ExprNode{}, fmt.Errorf("betweenBuildCondition error: unexpected number of conditions, expected 0 conditions")
+	}
+	childNodes, err := c.buildChildNodes()
 	if err != nil {
 		return ExprNode{}, err
 	}
@@ -246,7 +272,13 @@ func compareBuildCondition(c ConditionBuilder) (ExprNode, error) {
 // ConditionBuilders. There will first be checks to make sure that the input
 // ConditionBuilder has the correct format.
 func compoundBuildCondition(c ConditionBuilder) (ExprNode, error) {
-	childNodes, err := buildChildNodes(c, 0, 2)
+	if len(c.operandList) != 0 {
+		return ExprNode{}, fmt.Errorf("betweenBuildCondition error: unexpected number of operands, expected 0 operands")
+	}
+	if len(c.conditionList) < 2 {
+		return ExprNode{}, fmt.Errorf("betweenBuildCondition error: unexpected number of conditions, expected at least 2 conditions")
+	}
+	childNodes, err := c.buildChildNodes()
 	if err != nil {
 		return ExprNode{}, err
 	}
@@ -256,15 +288,13 @@ func compoundBuildCondition(c ConditionBuilder) (ExprNode, error) {
 
 	// create a string with escaped characters to substitute them with proper
 	// aliases during runtime
-	for ind := range c.conditionList {
-		ret.fmtExpr += "($c)"
-		if ind != len(c.conditionList)-1 {
-			switch c.Mode {
-			case AndCond:
-				ret.fmtExpr += " AND "
-			}
-		}
+	var mode string
+	switch c.Mode {
+	case AndCond:
+		mode = " AND "
 	}
+
+	ret.fmtExpr = "($c)" + strings.Repeat(mode+"($c)", len(c.conditionList)-1)
 
 	return ret, nil
 }
@@ -273,7 +303,14 @@ func compoundBuildCondition(c ConditionBuilder) (ExprNode, error) {
 // ConditionBuilders. There will first be checks to make sure that the input
 // ConditionBuilder has the correct format.
 func betweenBuildCondition(c ConditionBuilder) (ExprNode, error) {
-	childNodes, err := buildChildNodes(c, 3, 0)
+	if len(c.operandList) != 3 {
+		return ExprNode{}, fmt.Errorf("betweenBuildCondition error: unexpected number of operands, expected 3 operands")
+	}
+	if len(c.conditionList) != 0 {
+		return ExprNode{}, fmt.Errorf("betweenBuildCondition error: unexpected number of conditions, expected 0 conditions")
+	}
+
+	childNodes, err := c.buildChildNodes()
 	if err != nil {
 		return ExprNode{}, err
 	}
@@ -287,44 +324,22 @@ func betweenBuildCondition(c ConditionBuilder) (ExprNode, error) {
 	return ret, nil
 }
 
-// buildChildNodes will check the format of the ConditionBuilder as well as
-// create the list of the child ExprNodes. This avoids duplication of code
-// amongst the various buildConditions.
-func buildChildNodes(c ConditionBuilder, numOB, numCB int) ([]ExprNode, error) {
-	if c.Mode == AndCond {
-		if len(c.conditionList) < numCB {
-			return []ExprNode{}, fmt.Errorf("Invalid ConditionBuilder. Expected at least %d Conditions", numCB)
-		}
-	} else {
-		if len(c.conditionList) != numCB {
-			return []ExprNode{}, fmt.Errorf("Invalid ConditionBuilder. Expected %d Conditions", numCB)
-		}
-	}
-
-	// This check will be needed for In Condition, but not needed right now
-	// if c.Mode == InCond {
-	// 	if len(c.operandList) < numOB {
-	// 		return []ExprNode{}, fmt.Errorf("Invalid ConditionBuilder. Expected at least %d Operands", numOB)
-	// 	}
-	// } else {
-	if len(c.operandList) != numOB {
-		return []ExprNode{}, fmt.Errorf("Invalid ConditionBuilder. Expected %d Operands", numOB)
-	}
-	//}
-
+// buildChildNodes will create the list of the child ExprNodes. This avoids
+// duplication of code amongst the various buildConditions.
+func (cond ConditionBuilder) buildChildNodes() ([]ExprNode, error) {
 	var childNodes []ExprNode
-	if len(c.operandList) == 0 {
-		childNodes = make([]ExprNode, 0, len(c.conditionList))
-		for _, cond := range c.conditionList {
-			en, err := cond.buildCondition()
+	if len(cond.operandList) == 0 {
+		childNodes = make([]ExprNode, 0, len(cond.conditionList))
+		for _, condition := range cond.conditionList {
+			en, err := condition.buildCondition()
 			if err != nil {
 				return []ExprNode{}, err
 			}
 			childNodes = append(childNodes, en)
 		}
-	} else if len(c.conditionList) == 0 {
-		childNodes = make([]ExprNode, 0, len(c.operandList))
-		for _, ope := range c.operandList {
+	} else if len(cond.conditionList) == 0 {
+		childNodes = make([]ExprNode, 0, len(cond.operandList))
+		for _, ope := range cond.operandList {
 			en, err := ope.BuildOperand()
 			if err != nil {
 				return []ExprNode{}, err
