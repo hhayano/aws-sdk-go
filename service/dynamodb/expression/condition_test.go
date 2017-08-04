@@ -23,10 +23,12 @@ const (
 
 func (cem condErrorMode) String() string {
 	switch cem {
+	case noConditionError:
+		return "no Error"
 	case noMatchingMode:
 		return "no matching"
 	default:
-		return "no matching condErrorMode"
+		return ""
 	}
 }
 

@@ -36,6 +36,8 @@ const (
 
 func (oem opeErrorMode) String() string {
 	switch oem {
+	case noOperandError:
+		return "no Error"
 	case emptyPath:
 		return "path is empty"
 	case invalidPathIndex:
@@ -47,7 +49,7 @@ func (oem opeErrorMode) String() string {
 	case nilAliasList:
 		return "aliasList is nil"
 	default:
-		return "no matching opeErrorMode"
+		return ""
 	}
 }
 
