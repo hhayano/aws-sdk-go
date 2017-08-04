@@ -15,21 +15,20 @@ import (
 type condErrorMode int
 
 const (
-	noMatch condErrorMode = iota + 1
-	operandNum
-	conditionNum
+	noConditionError condErrorMode = iota
+	// noMatchingMode error will occur when the ConditionBuilder's Mode is not
+	// supported
+	noMatchingMode
 )
 
 func (cem condErrorMode) String() string {
 	switch cem {
-	case noMatch:
+	case noConditionError:
+		return "no Error"
+	case noMatchingMode:
 		return "no matching"
-	case operandNum:
-		return "unexpected number of operands"
-	case conditionNum:
-		return "unexpected number of conditions"
 	default:
-		return "no matching condErrorMode"
+		return ""
 	}
 }
 
@@ -252,28 +251,7 @@ func TestBuildCondition(t *testing.T) {
 		{
 			name:  "no match error",
 			input: ConditionBuilder{},
-			err:   noMatch,
-		},
-		{
-			name: "operand number error",
-			input: ConditionBuilder{
-				Mode: EqualCond,
-			},
-			err: operandNum,
-		},
-		{
-			name: "condition number error",
-			input: ConditionBuilder{
-				Mode: EqualCond,
-				conditionList: []ConditionBuilder{
-					ConditionBuilder{},
-				},
-				operandList: []OperandBuilder{
-					Path("foo"),
-					Value(5),
-				},
-			},
-			err: conditionNum,
+			err:   noMatchingMode,
 		},
 	}
 
@@ -281,7 +259,7 @@ func TestBuildCondition(t *testing.T) {
 		t.Run(c.name, func(t *testing.T) {
 			expr, err := c.input.buildCondition()
 
-			if c.err != 0 {
+			if c.err != noConditionError {
 				if err == nil {
 					t.Errorf("expect error %q, got no error", c.err)
 				} else {
@@ -363,29 +341,12 @@ func TestBoolCondition(t *testing.T) {
 				Expression: "(#0 = #0) AND (#1 = #0) AND (#2 = #0)",
 			},
 		},
-		{
-			name: "empty condition",
-			input: ConditionBuilder{
-				Mode: AndCond,
-			},
-			err: conditionNum,
-		},
-		{
-			name: "non-empty operand list",
-			input: ConditionBuilder{
-				operandList: []OperandBuilder{
-					Path("foo"),
-				},
-				Mode: AndCond,
-			},
-			err: operandNum,
-		},
 	}
 
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
 			expr, err := c.input.BuildExpression()
-			if c.err != 0 {
+			if c.err != noConditionError {
 				if err == nil {
 					t.Errorf("expect error %q, got no error", c.err)
 				} else {
@@ -467,34 +428,12 @@ func TestBetweenCondition(t *testing.T) {
 				Expression: "size (#0) BETWEEN :0 AND :1",
 			},
 		},
-		{
-			name: "non-empty condition list",
-			input: ConditionBuilder{
-				conditionList: []ConditionBuilder{
-					Value("foo").Equal(Path("bar")),
-				},
-				operandList: []OperandBuilder{
-					Path("foo"),
-					Value(5),
-					Value(6),
-				},
-				Mode: BetweenCond,
-			},
-			err: conditionNum,
-		},
-		{
-			name: "invalid operand list",
-			input: ConditionBuilder{
-				Mode: BetweenCond,
-			},
-			err: operandNum,
-		},
 	}
 
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
 			expr, err := c.input.BuildExpression()
-			if c.err != 0 {
+			if c.err != noConditionError {
 				if err == nil {
 					t.Errorf("expect error %q, got no error", c.err)
 				} else {

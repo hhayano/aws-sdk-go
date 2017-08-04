@@ -335,7 +335,8 @@ func (al *aliasList) aliasPath(nm string) (string, error) {
 	return fmt.Sprintf("#%d", len(al.namesList)-1), nil
 }
 
-// mergeExpressionMaps merges maps of multiple Expressions
+// mergeExpressionMaps merges maps of multiple Expressions. This is used to
+// combine the maps created by the child nodes
 func mergeExpressionMaps(lists ...[]Expression) (Expression, error) {
 	ret := Expression{}
 	for _, list := range lists {
