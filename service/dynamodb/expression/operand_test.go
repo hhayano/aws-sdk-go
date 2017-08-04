@@ -15,10 +15,22 @@ import (
 type opeErrorMode int
 
 const (
-	emptyPath opeErrorMode = iota + 1
-	pathIndex
-	escChar
+	noOperandError opeErrorMode = iota
+	// emptyPath error will occur if an empty string is passed into PathBuilder or
+	// a nested path has an empty intermediary attribute name (i.e. foo.bar..baz)
+	emptyPath
+	// invalidPathIndex error will occur if there is an invalid index between the
+	// square brackets or there is no attribute that a square bracket iterates
+	// over
+	invalidPathIndex
+	// invalidEscChar error will occer if the escape char '$' is either followed
+	// by an unsupported character or if the escape char is the last character
+	invalidEscChar
+	// outOfRange error will occur if there are more escaped chars than there are
+	// actual values to be aliased.
 	outOfRange
+	// nilAliasList error will occur if the aliasList passed in has not been
+	// initialized
 	nilAliasList
 )
 
@@ -26,9 +38,9 @@ func (oem opeErrorMode) String() string {
 	switch oem {
 	case emptyPath:
 		return "path is empty"
-	case pathIndex:
+	case invalidPathIndex:
 		return "invalid path index"
-	case escChar:
+	case invalidEscChar:
 		return "invalid escape"
 	case outOfRange:
 		return "out of range"
@@ -114,7 +126,7 @@ func TestBuildOperand(t *testing.T) {
 			name:     "invalid index",
 			input:    Path("[foo]"),
 			expected: ExprNode{},
-			err:      pathIndex,
+			err:      invalidPathIndex,
 		},
 	}
 
@@ -122,7 +134,7 @@ func TestBuildOperand(t *testing.T) {
 		t.Run(c.name, func(t *testing.T) {
 			en, err := c.input.BuildOperand()
 
-			if c.err != 0 {
+			if c.err != noOperandError {
 				if err == nil {
 					t.Errorf("expect error %q, got no error", c.err)
 				} else {
@@ -274,7 +286,7 @@ func TestBuildExpression(t *testing.T) {
 				names:   []string{"foo", "foo"},
 				fmtExpr: "$p.$",
 			},
-			err: escChar,
+			err: invalidEscChar,
 		},
 		{
 			name: "names out of range",
@@ -303,7 +315,7 @@ func TestBuildExpression(t *testing.T) {
 			input: ExprNode{
 				fmtExpr: "$!",
 			},
-			err: escChar,
+			err: invalidEscChar,
 		},
 		{
 			name:     "empty ExprNode",
@@ -328,7 +340,7 @@ func TestBuildExpression(t *testing.T) {
 				expr, err = c.input.buildExprNodes(&aliasList{})
 			}
 
-			if c.err != 0 {
+			if c.err != noOperandError {
 				if err == nil {
 					t.Errorf("expect error %q, got no error", c.err)
 				} else {
