@@ -1436,7 +1436,8 @@ func (c *SSM) DeleteParametersRequest(input *DeleteParametersInput) (req *reques
 
 // DeleteParameters API operation for Amazon Simple Systems Manager (SSM).
 //
-// Delete a list of parameters.
+// Delete a list of parameters. This API is used to delete parameters by using
+// the Amazon EC2 console.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -3831,6 +3832,14 @@ func (c *SSM) DescribeParametersRequest(input *DescribeParametersInput) (req *re
 //
 // Get information about a parameter.
 //
+// Request results are returned on a best-effort basis. If you specify MaxResults
+// in the request, the response includes information up to the limit specified.
+// The number of items returned, however, can be between zero and the value
+// of MaxResults. If the service reaches an internal limit while processing
+// the results, it stops the operation and returns the matching values up to
+// that point and a NextToken. You can specify the NextToken in a subsequent
+// call to get the next set of results.
+//
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
 // the error.
@@ -5397,6 +5406,14 @@ func (c *SSM) GetParametersByPathRequest(input *GetParametersByPathInput) (req *
 //
 // Retrieve parameters in a specific hierarchy. For more information, see Working
 // with Systems Manager Parameters (http://docs.aws.amazon.com/systems-manager/latest/userguide/sysman-paramstore-working.html).
+//
+// Request results are returned on a best-effort basis. If you specify MaxResults
+// in the request, the response includes information up to the limit specified.
+// The number of items returned, however, can be between zero and the value
+// of MaxResults. If the service reaches an internal limit while processing
+// the results, it stops the operation and returns the matching values up to
+// that point and a NextToken. You can specify the NextToken in a subsequent
+// call to get the next set of results.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -21789,6 +21806,92 @@ func (s *S3OutputUrl) SetOutputUrl(v string) *S3OutputUrl {
 	return s
 }
 
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/ssm-2014-11-06/SendAutomationSignalRequest
+type SendAutomationSignalInput struct {
+	_ struct{} `type:"structure"`
+
+	// The unique identifier for an existing Automation execution that you want
+	// to send the signal to.
+	//
+	// AutomationExecutionId is a required field
+	AutomationExecutionId *string `min:"36" type:"string" required:"true"`
+
+	// The data sent with the signal. The data schema depends on the type of signal
+	// used in the request.
+	Payload map[string][]*string `min:"1" type:"map"`
+
+	// The type of signal. Valid signal types include the following: Approve and
+	// Reject
+	//
+	// SignalType is a required field
+	SignalType *string `type:"string" required:"true" enum:"SignalType"`
+}
+
+// String returns the string representation
+func (s SendAutomationSignalInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s SendAutomationSignalInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *SendAutomationSignalInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "SendAutomationSignalInput"}
+	if s.AutomationExecutionId == nil {
+		invalidParams.Add(request.NewErrParamRequired("AutomationExecutionId"))
+	}
+	if s.AutomationExecutionId != nil && len(*s.AutomationExecutionId) < 36 {
+		invalidParams.Add(request.NewErrParamMinLen("AutomationExecutionId", 36))
+	}
+	if s.Payload != nil && len(s.Payload) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Payload", 1))
+	}
+	if s.SignalType == nil {
+		invalidParams.Add(request.NewErrParamRequired("SignalType"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetAutomationExecutionId sets the AutomationExecutionId field's value.
+func (s *SendAutomationSignalInput) SetAutomationExecutionId(v string) *SendAutomationSignalInput {
+	s.AutomationExecutionId = &v
+	return s
+}
+
+// SetPayload sets the Payload field's value.
+func (s *SendAutomationSignalInput) SetPayload(v map[string][]*string) *SendAutomationSignalInput {
+	s.Payload = v
+	return s
+}
+
+// SetSignalType sets the SignalType field's value.
+func (s *SendAutomationSignalInput) SetSignalType(v string) *SendAutomationSignalInput {
+	s.SignalType = &v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/ssm-2014-11-06/SendAutomationSignalResult
+type SendAutomationSignalOutput struct {
+	_ struct{} `type:"structure"`
+}
+
+// String returns the string representation
+func (s SendAutomationSignalOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s SendAutomationSignalOutput) GoString() string {
+	return s.String()
+}
+
 // Please also see https://docs.aws.amazon.com/goto/WebAPI/ssm-2014-11-06/SendCommandRequest
 type SendCommandInput struct {
 	_ struct{} `type:"structure"`
@@ -23343,6 +23446,9 @@ const (
 	// AutomationExecutionStatusInProgress is a AutomationExecutionStatus enum value
 	AutomationExecutionStatusInProgress = "InProgress"
 
+	// AutomationExecutionStatusWaiting is a AutomationExecutionStatus enum value
+	AutomationExecutionStatusWaiting = "Waiting"
+
 	// AutomationExecutionStatusSuccess is a AutomationExecutionStatus enum value
 	AutomationExecutionStatusSuccess = "Success"
 
@@ -23820,4 +23926,12 @@ const (
 
 	// ResourceTypeForTaggingParameter is a ResourceTypeForTagging enum value
 	ResourceTypeForTaggingParameter = "Parameter"
+)
+
+const (
+	// SignalTypeApprove is a SignalType enum value
+	SignalTypeApprove = "Approve"
+
+	// SignalTypeReject is a SignalType enum value
+	SignalTypeReject = "Reject"
 )
